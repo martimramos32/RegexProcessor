@@ -9,10 +9,24 @@ import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.TypeElement
 import javax.tools.Diagnostic
 
+/**
+ * Processador de anotações responsável por processar a anotação [Extract].
+ * Adicionalmente a esta tarefa, gera uma classe wrapper para qualquer classe que contenha métodos abstratos
+ * que estejam anotados com [Extract]. A classe gerada irá implementar esses mesmos métodos para conseguir
+ * executar a expressão regular fornecida sobre a string de entrada, retornando assim o valor correspondente (o primeiro grupo).
+ */
 @AutoService(Processor::class)
 @SupportedSourceVersion(SourceVersion.RELEASE_25)
 @SupportedAnnotationTypes("annotations.Extract")
 class RegexProcessor : AbstractProcessor() {
+
+    /**
+     * Processa as anotações geradas.
+     *
+     * @param annotations Os tipos de anotação solicitados para serem processados.
+     * @param roundEnv O ambiente com informações sobre a ronda de processamento atual e a anterior.
+     * @return Retorna true caso as anotações sejam reclamadas por este processador, false caso contrário.
+     */
     override fun process(annotations: MutableSet<out TypeElement>,
                          roundEnv: RoundEnvironment): Boolean {
         val classMethodMap = mutableMapOf<TypeElement,
@@ -34,6 +48,12 @@ class RegexProcessor : AbstractProcessor() {
         return true
     }
 
+    /**
+     * Gera uma classe de envolvimento (wrapper class) em Kotlin que implementa os métodos anotados.
+     *
+     * @param classElement O elemento de tipo sintático que representa a classe que contém os métodos anotados.
+     * @param methods A lista de elementos executáveis correspondentes aos métodos anotados com [Extract].
+     */
     private fun generateKotlinWrapperClass(classElement: TypeElement,
                                            methods: List<ExecutableElement >) {
         val packageName =
